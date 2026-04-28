@@ -600,11 +600,16 @@ h2 {
   padding: 0.6rem 1.25rem;
   font-size: 0.82rem;
   font-weight: 600;
+  font-family: var(--font);
   color: var(--text2);
   background: var(--bg3);
+  border: none;
   border-right: 1px solid var(--border2);
   cursor: pointer;
+  transition: color 0.15s, background 0.15s;
 }
+
+.qs-tab:hover { color: var(--text); background: var(--bg4); }
 
 .qs-tab.active {
   background: var(--bg2);

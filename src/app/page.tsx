@@ -1,4 +1,5 @@
 import { Logo } from "@/components/Logo";
+import { QuickstartTabs } from "@/components/QuickstartTabs";
 
 export default function Home() {
   return (
@@ -418,29 +419,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="quickstart-tabs">
-            <div className="qs-tab active">Docker</div>
-            <div className="qs-tab">Local dev</div>
-            <div className="qs-tab">Register an agent</div>
-          </div>
-
-          <div className="code-block">
-            <div className="code-block-bar">
-              <span className="code-block-lang">bash</span>
-            </div>
-            <code className="block">
-              <span className="c"># 1. Generate a strong API key</span>{"\n"}
-              <span className="kw">export</span> OPERATORBOARD_API_KEY=$(<span className="fn">openssl</span> rand -hex <span className="num">32</span>){"\n\n"}
-              <span className="c"># 2. Clone and start the full stack</span>{"\n"}
-              <span className="fn">git</span> clone https://github.com/projectblackboxllc/operatorboard.git{"\n"}
-              <span className="fn">cd</span> operatorboard{"\n"}
-              <span className="fn">docker</span> compose up{"\n\n"}
-              <span className="c"># Include the mock agent for a full demo</span>{"\n"}
-              <span className="fn">docker</span> compose --profile demo up{"\n\n"}
-              <span className="c"># Dashboard → http://localhost:3000</span>{"\n"}
-              <span className="c"># API       → http://localhost:4100</span>
-            </code>
-          </div>
+          <QuickstartTabs />
 
           <div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
             <a href="https://github.com/projectblackboxllc/operatorboard" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
