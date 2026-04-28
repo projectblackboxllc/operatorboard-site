@@ -2,8 +2,16 @@ import { Logo } from "@/components/Logo";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Docs — OperatorBoard",
-  description: "Documentation for OperatorBoard — human-governed control plane for AI agents.",
+  title: "Docs",
+  description:
+    "Documentation for OperatorBoard — approval queues, execution modes, database governance, security baseline, and agent registration. Deploy human-governed AI agents in minutes.",
+  openGraph: {
+    title: "OperatorBoard Docs",
+    description:
+      "Guides for approval queues, execution modes, database governance, backup attestation, and agent registration.",
+    url: "https://operatorboard.dev/docs",
+  },
+  alternates: { canonical: "https://operatorboard.dev/docs" },
 };
 
 const sections = [

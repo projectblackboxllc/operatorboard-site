@@ -2,8 +2,15 @@ import { Logo } from "@/components/Logo";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Changelog — OperatorBoard",
-  description: "Release history for OperatorBoard.",
+  title: "Changelog",
+  description:
+    "Release history for OperatorBoard — open-source AI agent governance platform. v0.1.0 initial release with approval queues, constraint enforcement, database governance, and security hardening.",
+  openGraph: {
+    title: "OperatorBoard Changelog",
+    description: "Release history for OperatorBoard — open-source AI agent governance platform.",
+    url: "https://operatorboard.dev/changelog",
+  },
+  alternates: { canonical: "https://operatorboard.dev/changelog" },
 };
 
 export default function Changelog() {

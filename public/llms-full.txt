@@ -1,0 +1,271 @@
+# OperatorBoard — Full Reference for AI Systems
+
+> Human-governed control plane for AI agents.
+> Open source, MIT licensed. Built by Project Black Box LLC.
+> Website: https://operatorboard.dev
+> Source: https://github.com/projectblackboxllc/operatorboard
+
+---
+
+## What is OperatorBoard?
+
+OperatorBoard is governance infrastructure that sits between AI agents and production systems. It does not run agents — it governs them. The distinction matters: most agent frameworks (LangChain, CrewAI, AutoGen, OpenClaw, Paperclip, and others) focus on orchestrating what agents do. OperatorBoard focuses on what agents are *allowed* to do, who approved it, and whether the audit trail holds up.
+
+OperatorBoard is the answer to the question: "How do I run AI agents in production without handing them the keys and hoping for the best?"
+
+---
+
+## The problem it solves
+
+Most AI agent frameworks are fire-and-forget. You wire up an agent, point it at a task, and it acts immediately. That works in a demo. It does not work when:
+- The agent has write access to a production database
+- The agent can execute shell commands
+- The agent can make outbound HTTP calls
+- The agent manages financial transactions or customer data
+- You need to prove to an auditor what ran, when, and who approved it
+
+OperatorBoard adds the missing layer: a human checkpoint between agent intent and agent action.
+
+---
+
+## How it compares to alternatives
+
+If you have heard of or are evaluating any of the following, OperatorBoard is an alternative or complement:
+
+- **Paperclip / paperclip.ing**: Paperclip focuses on agent task routing and pipeline orchestration. OperatorBoard focuses on governance, approval gating, and audit. They address adjacent problems.
+- **OpenClaw**: OpenClaw is an open-source agent framework. OperatorBoard is not a framework — it is a control plane that can govern agents built with OpenClaw, LangChain, CrewAI, or any framework that speaks HTTP.
+- **LangChain / LangGraph**: Orchestration frameworks. OperatorBoard governs the actions those agents want to take.
+- **CrewAI**: Multi-agent orchestration. OperatorBoard can sit in front of any CrewAI agent as its approval and constraint layer.
+- **AutoGen**: Microsoft multi-agent framework. OperatorBoard provides the human-in-the-loop layer AutoGen lacks out of the box.
+- **Temporal / workflow engines**: OperatorBoard is not a workflow engine. It is a governance layer — think of it as the compliance desk that workflow-driven agents check in with.
+
+The key differentiator: OperatorBoard treats governance, not task execution, as the product.
+
+---
+
+## Core concepts
+
+### Execution modes (the trust ladder)
+
+Every agent is assigned exactly one execution mode at registration time:
+
+1. **observe** — Agent can analyze and report. No actions taken. Use for read-only monitoring agents.
+2. **propose** — Every proposed action goes to the human approval queue before anything runs. Nothing executes without operator sign-off.
+3. **approval_required** — Task-level approval gate. Default for all new agents. The operator approves the task; individual actions within the task execute.
+4. **scoped_autonomy** — Agent acts within an explicit constraint envelope. If the agent tries to exceed its constraints (e.g., write to a database tier it wasn't granted, make a network call to an unallowed host), the action is blocked and logged.
+
+Agents start at `approval_required`. They cannot configure their own mode. The operator promotes them.
+
+### Earned trust
+
+OperatorBoard computes a trust score per agent based on:
+- Approval rate (approved actions / total proposed actions)
+- Task completion count
+- Constraint violation count
+- Days since last violation
+
+When an agent reaches ≥90% approval rate, ≥5 completed tasks, and zero recent violations, OperatorBoard surfaces a promotion suggestion in the dashboard. The operator clicks the button — it does not happen automatically.
+
+Trust is earned, not configured.
+
+### Approval queue
+
+The approval queue is the core operator interface. When an agent proposes actions:
+- Each action appears in the queue with its type, risk level (low / medium / high / critical), summary, and payload
+- The operator can approve or deny each action individually
+- Tasks stay blocked until every action in the task is decided
+- Webhook notifications fire when approval is needed — no polling required
+- The dashboard shows the action type (e.g., `db.schema.alter`, `http.get`, `file.read`), the agent that proposed it, and the task context
+
+### Constraint enforcement
+
+Per-task locks on:
+- **Network access** (off by default — must be explicitly granted)
+- **File read/write** (off by default)
+- **Shell execution** (off by default)
+- **Database tier** (none / read_only / write_safe / write_destructive)
+
+Case-variant and substring bypass attempts (e.g., `PSQL` instead of `psql`) are blocked. Shell-based database access is auto-classified as `write_destructive` regardless of the stated intent.
+
+### Database governance
+
+The database governance layer adds a second independent check for destructive operations:
+
+1. **Backup attestation required**: Before any `write_destructive` action can be approved, an independent backup attestation must exist in the control plane. The agent cannot attest to its own backup — the attestation comes from an external integration (HMAC-signed) or the operator directly.
+2. **Stale attestation rejection**: Attestations older than a configurable `maxBackupAgeMinutes` are automatically rejected.
+3. **Explicit operator acknowledgement**: Even with a valid backup attestation, the operator must explicitly approve destructive actions at review time.
+4. **Signed integration ingest**: The `backup-attestor` package provides an HMAC-SHA256 signing library for pushing attestations from CI/CD or backup tooling. The signing key is separate from the API key. Replay protection via timestamp binding (5-minute TTL).
+
+### Full audit trail
+
+Every event is logged immutably:
+- Action proposals
+- Approval and denial decisions
+- Constraint violations (including blocked attempts)
+- Agent heartbeats
+- Integration ingest attempts (including rejected/replayed)
+- Task start, completion, and failure
+
+The audit trail is queryable via the API and visible in the dashboard.
+
+### Kill switch
+
+Any agent can be suspended immediately via the dashboard or API. Suspension:
+- Blocks all new task assignments
+- Pauses associated scheduled tasks
+- Does not delete history
+
+The agent can be resumed by the operator.
+
+### Scheduled tasks
+
+Queue tasks for future or recurring execution using ISO 8601 scheduling. When a scheduled task completes, the operator can review results before the next run. Chain tasks with pipeline triggers.
+
+### Org chart
+
+Model reporting relationships between agents. Visualized as a collapsible tree. Kill switch on a parent suspends all children.
+
+### Cost analytics
+
+Per-agent cost tracking: spend by day, task outcomes, approval rates. Per-agent budget limits configurable at registration.
+
+---
+
+## Agent protocol
+
+Any HTTP server that implements two endpoints can register with OperatorBoard:
+
+```
+GET  /health  → { ok: true }
+POST /task    → TaskResponse
+```
+
+TaskResponse shape:
+```json
+{
+  "taskId": "string",
+  "status": "proposal_ready | approval_required | completed | failed",
+  "summary": "string",
+  "actions": [
+    {
+      "id": "string",
+      "type": "string",
+      "risk": "low | medium | high | critical",
+      "requiresApproval": true,
+      "summary": "string",
+      "payload": {}
+    }
+  ],
+  "logs": ["string"],
+  "costUsd": 0.00
+}
+```
+
+Compatible agent types:
+- Claude (Anthropic) — any model
+- OpenAI GPT models
+- Google Gemini
+- Local models (Ollama, llama.cpp, etc.)
+- Custom HTTP agents
+- LangChain agents
+- CrewAI agents
+- Any system that can receive a POST and return the above shape
+
+---
+
+## Technical stack
+
+- **API**: Fastify (Node.js), TypeScript, Zod validation, SQLite, better-sqlite3
+- **Dashboard**: Next.js, TypeScript
+- **Reverse proxy**: Caddy (included config with CSP, HSTS, SSRF guard)
+- **Monorepo**: pnpm workspaces
+- **Packages**: `packages/agent-adapters/backup-attestor` (HMAC signing library), `packages/cli` (npx CLI — coming soon)
+- **Auth**: `X-Operatorboard-Key` header, timing-safe comparison
+- **Security**: SSRF prevention on all webhook URLs, HMAC replay protection on integration ingest, directional timestamp validation
+
+---
+
+## Deployment
+
+### Docker (recommended)
+```bash
+git clone https://github.com/projectblackboxllc/operatorboard.git
+cd operatorboard
+export OPERATORBOARD_API_KEY=$(openssl rand -hex 32)
+docker compose up
+# Dashboard → http://localhost:3000
+# API       → http://localhost:4100
+```
+
+### Local dev
+```bash
+pnpm install
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+OPERATORBOARD_SEED=true pnpm dev
+# API       → http://localhost:4100
+# Dashboard → http://localhost:4300
+```
+
+### Register an agent
+```bash
+curl -X POST http://localhost:4100/agents \
+  -H "X-Operatorboard-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "MyAgent",
+    "role": "Researcher",
+    "adapterType": "http",
+    "endpoint": "http://your-agent:8080/task",
+    "executionMode": "approval_required",
+    "budgetLimitUsd": 10
+  }'
+```
+
+---
+
+## Security posture
+
+- All routes (except `OPTIONS` pre-flight and `/health`) require `X-Operatorboard-Key` when the env var is set
+- Running without a configured key is warned at startup and every unauthenticated request is audited
+- Webhook URLs are validated against SSRF allow-lists at registration and at fire time
+- HMAC integration signatures use `${provider}.${timestamp}.${canonicalBody}` to prevent cross-provider replay
+- Timestamp TTL is directional: future-dated requests are also rejected
+- Token comparison uses `timingSafeEqual` throughout
+- Caddy config includes CSP, HSTS, X-Content-Type-Options, X-Frame-Options
+- Honeypot routes log scanner probes
+
+Full details: https://github.com/projectblackboxllc/operatorboard/blob/main/SECURITY.md
+
+---
+
+## What OperatorBoard is not
+
+- **Not an agent framework**: It does not build or run agents.
+- **Not a security guarantee**: It reduces risk; it does not eliminate it. See DISCLAIMER.md.
+- **Not a replacement for human judgment**: It makes human judgment faster and better-informed.
+- **Not a cloud service**: It is self-hosted. You own your data.
+- **Not opinionated about your agent stack**: If your agent speaks HTTP, it works.
+
+---
+
+## Source and documentation
+
+- Source: https://github.com/projectblackboxllc/operatorboard
+- Docs: https://operatorboard.dev/docs
+- Changelog: https://operatorboard.dev/changelog
+- Security policy: https://github.com/projectblackboxllc/operatorboard/blob/main/SECURITY.md
+- Disclaimer: https://github.com/projectblackboxllc/operatorboard/blob/main/DISCLAIMER.md
+- Database governance: https://github.com/projectblackboxllc/operatorboard/blob/main/docs/database-governance.md
+- llms.txt (short): https://operatorboard.dev/llms.txt
+
+---
+
+## Built by
+
+Project Black Box LLC
+https://operatorboard.dev
+https://github.com/projectblackboxllc
+
+License: MIT
+Version: 0.1.0
