@@ -383,6 +383,41 @@ export default function Home() {
           <h2>Running in under five minutes.</h2>
           <p className="section-sub">Docker gets you a full stack. Local dev supported with pnpm.</p>
 
+          {/* Coming soon CLI callout */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "1rem",
+            padding: "0.9rem 1.25rem",
+            marginBottom: "1.5rem",
+            background: "var(--bg2)",
+            border: "1px solid var(--border2)",
+            borderLeft: "3px solid var(--accent)",
+            borderRadius: "var(--radius)",
+          }}>
+            <span style={{ fontSize: "1.1rem" }}>⚡</span>
+            <div>
+              <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)" }}>
+                <code style={{ color: "var(--accent)" }}>npx operatorboard</code>
+                {" "}
+                <span style={{
+                  fontSize: "0.68rem",
+                  fontWeight: 700,
+                  padding: "0.15rem 0.5rem",
+                  borderRadius: "99px",
+                  background: "var(--yellow-dim)",
+                  color: "var(--yellow)",
+                  verticalAlign: "middle",
+                  marginLeft: "0.4rem",
+                }}>COMING SOON</span>
+              </span>
+              <p style={{ fontSize: "0.82rem", color: "var(--text2)", marginTop: "0.2rem" }}>
+                One-command setup — generates your API key, starts the stack, opens the dashboard.
+                CLI is built and publishing to npm shortly.
+              </p>
+            </div>
+          </div>
+
           <div className="quickstart-tabs">
             <div className="qs-tab active">Docker</div>
             <div className="qs-tab">Local dev</div>
@@ -396,7 +431,9 @@ export default function Home() {
             <code className="block">
               <span className="c"># 1. Generate a strong API key</span>{"\n"}
               <span className="kw">export</span> OPERATORBOARD_API_KEY=$(<span className="fn">openssl</span> rand -hex <span className="num">32</span>){"\n\n"}
-              <span className="c"># 2. Start the full stack</span>{"\n"}
+              <span className="c"># 2. Clone and start the full stack</span>{"\n"}
+              <span className="fn">git</span> clone https://github.com/projectblackboxllc/operatorboard.git{"\n"}
+              <span className="fn">cd</span> operatorboard{"\n"}
               <span className="fn">docker</span> compose up{"\n\n"}
               <span className="c"># Include the mock agent for a full demo</span>{"\n"}
               <span className="fn">docker</span> compose --profile demo up{"\n\n"}
@@ -407,7 +444,7 @@ export default function Home() {
 
           <div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
             <a href="https://github.com/projectblackboxllc/operatorboard" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
-              Clone on GitHub →
+              View on GitHub →
             </a>
             <a href="/docs" className="btn btn-outline">Read the docs</a>
             <a href="https://github.com/projectblackboxllc/operatorboard/blob/main/SECURITY.md" className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
