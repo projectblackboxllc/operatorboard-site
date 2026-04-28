@@ -1,0 +1,53 @@
+# OperatorBoard
+
+> Human-governed control plane for AI agents. Open source, MIT licensed.
+
+OperatorBoard is governance infrastructure that sits between AI agents and production. Agents propose actions; OperatorBoard enforces constraints, routes approvals to human operators, and maintains a full audit trail. It does not run agents — it governs them.
+
+## Core concepts
+
+- **Execution modes**: observe → propose → approval_required → scoped_autonomy. Every agent starts at approval_required. Autonomy is earned through a track record of approved actions and zero constraint violations.
+- **Approval queue**: Multi-action review. Tasks stay blocked until every proposed action is decided by a human operator.
+- **Earned trust**: At ≥90% approval rate, ≥5 tasks, zero violations, OperatorBoard surfaces a promotion suggestion. The operator still clicks the button.
+- **Constraint enforcement**: Per-task locks on network access, file read/write, shell execution, and database tier. Network and file access are off by default.
+- **Database governance**: Four-tier model (none / read_only / write_safe / write_destructive). Destructive actions require an independently-held backup attestation — not an agent claim. Shell-based DB access is auto-classified and blocked.
+- **Audit trail**: Every action, approval decision, constraint violation, heartbeat, and integration attempt is logged.
+
+## Agent protocol
+
+Any HTTP server that implements two endpoints can register:
+
+```
+GET  /health  → { ok: true }
+POST /task    → TaskResponse
+```
+
+TaskResponse shape:
+```json
+{
+  "taskId": "string",
+  "status": "proposal_ready | approval_required | completed | failed",
+  "summary": "string",
+  "actions": [{ "id": "string", "type": "string", "risk": "low|medium|high|critical", "requiresApproval": true, "summary": "string", "payload": {} }],
+  "logs": ["string"],
+  "costUsd": 0.00
+}
+```
+
+## Source code
+
+- GitHub: https://github.com/projectblackboxllc/operatorboard
+- License: MIT
+- Stack: Fastify API + Next.js dashboard + SQLite + Zod + TypeScript
+- Monorepo: pnpm workspaces
+
+## Documentation
+
+- Database governance: https://github.com/projectblackboxllc/operatorboard/blob/main/docs/database-governance.md
+- Security baseline: https://github.com/projectblackboxllc/operatorboard/blob/main/docs/security-baseline.md
+- Security policy: https://github.com/projectblackboxllc/operatorboard/blob/main/SECURITY.md
+- Disclaimer: https://github.com/projectblackboxllc/operatorboard/blob/main/DISCLAIMER.md
+
+## Built by
+
+Project Black Box LLC — https://operatorboard.dev
