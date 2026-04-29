@@ -3,6 +3,21 @@ import { useState } from "react";
 
 const tabs = [
   {
+    label: "npx",
+    content: (
+      <code className="block">
+        <span className="c"># Zero-install quickstart — Docker required</span>{"\n"}
+        <span className="fn">npx</span> operatorboard init{"\n\n"}
+        <span className="c"># Generates API key, writes docker-compose config,</span>{"\n"}
+        <span className="c"># starts the stack, and opens the dashboard.</span>{"\n\n"}
+        <span className="c"># Run with demo seed data:</span>{"\n"}
+        <span className="fn">npx</span> operatorboard init --demo{"\n\n"}
+        <span className="c"># Dashboard → http://localhost:3000</span>{"\n"}
+        <span className="c"># API       → http://localhost:4100</span>
+      </code>
+    ),
+  },
+  {
     label: "Docker",
     content: (
       <code className="block">

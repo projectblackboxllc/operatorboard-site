@@ -382,15 +382,15 @@ export default function Home() {
         <div className="section-inner">
           <p className="section-eyebrow">Quick start</p>
           <h2>Running in under five minutes.</h2>
-          <p className="section-sub">Docker gets you a full stack. Local dev supported with pnpm.</p>
+          <p className="section-sub">One-click cloud deploy, Docker full stack, or local dev — pick your path.</p>
 
-          {/* Coming soon CLI callout */}
+          {/* CLI callout — live on npm */}
           <div style={{
             display: "flex",
             alignItems: "center",
             gap: "1rem",
             padding: "0.9rem 1.25rem",
-            marginBottom: "1.5rem",
+            marginBottom: "1.25rem",
             background: "var(--bg2)",
             border: "1px solid var(--border2)",
             borderLeft: "3px solid var(--accent)",
@@ -399,24 +399,71 @@ export default function Home() {
             <span style={{ fontSize: "1.1rem" }}>⚡</span>
             <div>
               <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)" }}>
-                <code style={{ color: "var(--accent)" }}>npx operatorboard</code>
-                {" "}
-                <span style={{
-                  fontSize: "0.68rem",
-                  fontWeight: 700,
-                  padding: "0.15rem 0.5rem",
-                  borderRadius: "99px",
-                  background: "var(--yellow-dim)",
-                  color: "var(--yellow)",
-                  verticalAlign: "middle",
-                  marginLeft: "0.4rem",
-                }}>COMING SOON</span>
+                <code style={{ color: "var(--accent)" }}>npx operatorboard init</code>
               </span>
               <p style={{ fontSize: "0.82rem", color: "var(--text2)", marginTop: "0.2rem" }}>
-                One-command setup — generates your API key, starts the stack, opens the dashboard.
-                CLI is built and publishing to npm shortly.
+                One-command setup — generates your API key, writes docker-compose config, starts the stack, opens the dashboard.
               </p>
             </div>
+          </div>
+
+          {/* One-click cloud deploy */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "0.75rem",
+            marginBottom: "1.5rem",
+          }}>
+            <a
+              href="https://railway.app/new/template?template=https://github.com/projectblackboxllc/operatorboard&envs=OPERATORBOARD_API_KEY&OPERATORBOARD_API_KEYDesc=Strong+random+API+key+%28run%3A+openssl+rand+-hex+32%29"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                padding: "0.8rem 1rem",
+                background: "var(--bg2)",
+                border: "1px solid var(--border2)",
+                borderRadius: "var(--radius)",
+                color: "var(--text)",
+                textDecoration: "none",
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                transition: "border-color 0.15s",
+              }}
+            >
+              <span>🚂</span>
+              <div>
+                <div>Deploy on Railway</div>
+                <div style={{ fontSize: "0.75rem", color: "var(--text2)", fontWeight: 400 }}>API live in ~2 min</div>
+              </div>
+            </a>
+            <a
+              href="https://render.com/deploy?repo=https://github.com/projectblackboxllc/operatorboard"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                padding: "0.8rem 1rem",
+                background: "var(--bg2)",
+                border: "1px solid var(--border2)",
+                borderRadius: "var(--radius)",
+                color: "var(--text)",
+                textDecoration: "none",
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                transition: "border-color 0.15s",
+              }}
+            >
+              <span>🎨</span>
+              <div>
+                <div>Deploy on Render</div>
+                <div style={{ fontSize: "0.75rem", color: "var(--text2)", fontWeight: 400 }}>API key auto-generated</div>
+              </div>
+            </a>
           </div>
 
           <QuickstartTabs />
